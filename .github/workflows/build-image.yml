@@ -1,0 +1,27 @@
+name: Build Image
+
+on:
+  push:
+    branches:
+      - develop
+      - "release/*"
+      - main
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Docker
+        run: sudo apt-get install docker.io -y
+
+      - name: Get Current Version
+        run: echo "export VERSION=$(node -e "console.log(require('./package.json').version);")" > version.env
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Build Image
+        run: docker build . -t image:${{ env.VERSION }}
+        working-directory: ${{ github.workspace }}

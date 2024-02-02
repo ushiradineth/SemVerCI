@@ -1,0 +1,26 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      semver:
+        description: "Choose the semver type"
+        required: true
+        default: "minor"
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install git
+        run: sudo apt-get install git -y
+
+      - name: Run version bump script
+        run: source version.sh snapshot ${{ github.event.inputs.semver }}

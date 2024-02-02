@@ -1,0 +1,17 @@
+name: Initiate Release Branch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  initiate-release-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install git
+        run: sudo apt-get install git -y
+
+      - name: Run initiate release branch script
+        run: source initiate-release-branch.sh

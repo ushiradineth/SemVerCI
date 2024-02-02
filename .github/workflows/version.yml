@@ -1,0 +1,47 @@
+name: Build and Versioning
+
+on:
+  push:
+    branches:
+      - develop
+      - "release/*"
+      - main
+
+jobs:
+  versioning-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install git
+        run: sudo apt-get install git -y
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Get Current Version
+        run: echo "export VERSION=$(node -e "console.log(require('./package.json').version);")" > version.env
+        working-directory: ${{ github.workspace }}
+
+      - name: Versioning
+        if: github.ref == 'refs/heads/main'
+        run: source version.sh main
+
+      - name: Versioning
+        if: github.ref == 'refs/heads/develop'
+        run: source version.sh snapshot
+
+      - name: Versioning
+        if: startsWith(github.ref, 'refs/heads/release/')
+        run: source version.sh rc
+
+      - name: Versioning
+        if: startsWith(github.ref, 'refs/heads/hotfix/')
+        run: source hotfix.sh
+
+      - name: Build Image
+        run: docker build . -t image:${{ env.VERSION }}
+        working-directory: ${{ github.workspace }}
