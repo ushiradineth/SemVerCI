@@ -1,6 +1,11 @@
 # SemVerCI
 
-Automate Semantic Versioning a Git Flow Repository
+Automate Semantic Versioning a Git Repository using [GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) Standards
+
+## Really good Alternative: [GitFlow CLI Tool by NVIE](https://github.com/nvie/gitflow)
+
+- A collection of Git extensions to provide high-level repository operations for Vincent Driessen's branching model.
+- Highly recommend using this tool for GitFlow workflows, the configurations shared in this repository are for workflows that cannot be supported by GitFlow due to collaboration, complexity or different branching strategies etc.
 
 ## Disclaimer
 
