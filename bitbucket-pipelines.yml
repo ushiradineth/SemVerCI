@@ -1,0 +1,82 @@
+# image: bellsoft/liberica-openjdk-alpine:17
+image: node:20-alpine
+
+clone:
+  depth: full
+
+  steps:
+    - step: &build-image
+        name: Build Image
+        size: 2x
+        services:
+          - docker
+        caches:
+          - docker
+        script:
+          - source version.env
+          - echo "Version - $VERSION"
+          - docker build . -t image:$VERSION
+
+pipelines:
+  custom:
+    version-bump:
+      - variables:
+          - name: semver
+            default: minor
+            allowed-values:
+              - major
+              - minor
+              - patch
+      - step:
+          script:
+            - apk add --no-cache git
+            - source version.sh snapshot $semver
+
+    initiate-release-branch:
+      - step:
+          script:
+            - apk add --no-cache git
+            - source initiate-release-branch.sh
+
+    build-image:
+      - step:
+          name: Get Current Version
+          script:
+            # - echo "export VERSION=$(./mvnw help:evaluate -ntp -Dexpression=project.version -q -DforceStdout)" > version.env
+            - echo "export VERSION=$(node -e "console.log(require('./package.json').version);")" > version.env
+          artifacts:
+            - version.env
+      - step: *build-image
+
+  branches:
+    develop:
+      - step:
+          name: Versioning
+          script:
+            - apk add --no-cache git
+            - source version.sh snapshot
+          artifacts:
+            - version.env
+      - step: *build-image
+
+    "release/*":
+      - step:
+          name: Versioning
+          script:
+            - apk add --no-cache git
+            - source version.sh rc
+          artifacts:
+            - version.env
+      - step: *build-image
+
+    main:
+      - step:
+          name: Versioning
+          script:
+            - apk add --no-cache git
+            - source version.sh main
+            - source hotfix.sh # only runs on hotfix/* branches
+            - source release.sh # only runs on release/* branches
+          artifacts:
+            - version.env
+      - step: *build-image
